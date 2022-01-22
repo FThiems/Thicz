@@ -1,13 +1,13 @@
 #include <iostream>
 #include "tgaimage.h"
-#include "model.h"
+//#include "model.h"
 
 const TGAColor white    = TGAColor(254, 255, 255, 255);
 const TGAColor red      = TGAColor(255, 0,   0,   255);
 const TGAColor blue     = TGAColor(0, 0,   255,   255);
 const TGAColor green    = TGAColor(0, 255, 0,     255);
 const TGAColor magenta  = TGAColor(255, 0,   255, 255); 
-Model *model = NULL;
+//Model *model = NULL;
 const int width = 300;
 const int height = 300;
 
@@ -49,23 +49,35 @@ void triangle(int Ax, int Ay, int Bx, int By, int Cx, int Cy, TGAImage &image){
         int BGx = std::max(std::max(Ax,Bx), Cx);
         int BGy = std::min(std::min(Ay,By), Cy);
 
-        int M[3][3] = {{Ax, Bx, Cx}, {Ay, By, Cy}, {1, 1, 1}};
-        int determinant = 0;
+	float M[3][3] = {{float(Ax), Bx, Cx}, {Ay, By, Cy}, {1, 1, 1}};
+        float Minv[3][3];
+	float determinant = 0;
+	float u,v,w;
+	int P[3];
 
-        for(int i = 0; i<3; i++){
+        for(int i = 0; i<3; i++)
                 determinant = determinant + (M[0][i] * (M[1][(i+1)%3] * M[2][(i+2)%3] - M[1][(i+2)%3] * M[2][(i+1)%3]));
         std::cout << "det =" << determinant << std::endl; 
         std::cout<<"\n\nInverse of Matrix is: \n";
         for(int i = 0; i < 3; i++){
                 for(int j = 0; j < 3; j++)
-                        std::cout<<((M[(j+1)%3][(i+1)%3] * M[(j+2)%3][(i+2)%3]) - (M[(j+1)%3][(i+2)%3] * M[(j+2)%3][(i+1)%3]))/ determinant<<"\t";
+		{
+			
+			std::cout<<((M[(j+1)%3][(i+1)%3] * M[(j+2)%3][(i+2)%3]) - (M[(j+1)%3][(i+2)%3] * M[(j+2)%3][(i+1)%3]))/ determinant<<"\t";
+			Minv[i][j] = ((M[(j+1)%3][(i+1)%3] * M[(j+2)%3][(i+2)%3]) - (M[(j+1)%3][(i+2)%3] * M[(j+2)%3][(i+1)%3]))/ determinant;	
+			std::cout << Minv[i][j] << std::endl; 
+		}
                 std::cout<<"\n";
         }
 
         for (int x = HGx; x<=BGx; x++ ){
                 for (int y=HGy; y>=BGy; y--){
+			u = x * Minv[1][1] + y * Minv[2][1] + 1 * Minv[3][1];
+			v = x * Minv[1][2] + y * Minv[2][2] + 1 * Minv[3][2];
+			w = x * Minv[1][3] + y * Minv[2][3] + 1 * Minv[3][3];
+			if ( u < 0 || v < 0 || w < 0 )
+				continue;	
                         image.set(x,y,red);
-                        int R[3] = {x,y,1};
                 }
         }
 
