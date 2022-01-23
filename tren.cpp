@@ -43,18 +43,21 @@ void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
     } 
 } 
 
-void triangle(int Ax, int Ay, int Bx, int By, int Cx, int Cy, TGAImage &image){
-        int HGx = std::min(std::min(Ax,Bx), Cx);
-        int HGy = std::max(std::max(Ay,By), Cy);
-        int BGx = std::max(std::max(Ax,Bx), Cx);
-        int BGy = std::min(std::min(Ay,By), Cy);
+/**
+ * Fonction qui dessine un triangle plein
+ */
+void triangle(float Ax, float Ay, float Bx, float By, float Cx, float Cy, TGAImage &image){
+        float HGx = std::min(std::min(Ax,Bx), Cx);
+        float HGy = std::max(std::max(Ay,By), Cy);
+        float BGx = std::max(std::max(Ax,Bx), Cx);
+        float BGy = std::min(std::min(Ay,By), Cy);
 
 	float M[3][3] = {{float(Ax), Bx, Cx}, {Ay, By, Cy}, {1, 1, 1}};
         float Minv[3][3];
 	float determinant = 0;
 	float u,v,w;
-	int P[3];
-
+//Code d'inversion de matrice et de calcul de déterminant
+/*
         for(int i = 0; i<3; i++)
                 determinant = determinant + (M[0][i] * (M[1][(i+1)%3] * M[2][(i+2)%3] - M[1][(i+2)%3] * M[2][(i+1)%3]));
         std::cout << "det =" << determinant << std::endl; 
@@ -69,21 +72,22 @@ void triangle(int Ax, int Ay, int Bx, int By, int Cx, int Cy, TGAImage &image){
 		}
                 std::cout<<"\n";
         }
-
+*/
         for (int x = HGx; x<=BGx; x++ ){
                 for (int y=HGy; y>=BGy; y--){
-			u = x * Minv[1][1] + y * Minv[2][1] + 1 * Minv[3][1];
+			//Au lieu de passer par les matrices je passe par la résoltion du ssytème à 3 équations pour les coo barycentriques
+/*			u = x * Minv[1][1] + y * Minv[2][1] + 1 * Minv[3][1];
 			v = x * Minv[1][2] + y * Minv[2][2] + 1 * Minv[3][2];
-			w = x * Minv[1][3] + y * Minv[2][3] + 1 * Minv[3][3];
-			if ( u < 0 || v < 0 || w < 0 )
+			w = x * Minv[1][3] + y * Minv[2][3] + 1 * Minv[3][3];*/
+			u = ((By - Cy)*(x-Cx) + (Cx-Bx)*(y-Cy))/((By-Cy)*(Ax-Cx) + (Cx-Bx)*(Ay-Cy));
+			v = ((Cy - Ay)*(x-Cx) + (Ax-Cx)*(y-Cy))/((By-Cy)*(Ax-Cx) + (Cx-Bx)*(Ay-Cy));
+			w = 1-u-v;
+			//std::cout << u << " " << v << " " << w << std::endl;
+			if ( u> 1 || u < 0 || v > 1 || v < 0 || w>1 || w < 0 )
 				continue;	
-                        image.set(x,y,red);
+                        image.set(x,y,TGAColor(u*255,v*255,w*255,255));
                 }
         }
-
-        line(Ax,Ay,Bx,By,image,green);
-        line(Cx,Cy,Bx,By,image,white);
-        line(Ax,Ay,Cx,Cy,image,blue);
 }
 
 int main(int argc, char** argv) {
