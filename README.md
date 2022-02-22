@@ -7,4 +7,4 @@ J'ai fait tout jusqu'aux textures (excluses) où je me suis retrouvé bloqué.
 ```sh
 make
 ./main
-``` Thicz
+```
