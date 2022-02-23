@@ -53,18 +53,23 @@ void triangle(float Ax, float Ay, float Az, float Bx, float By, float Bz, float 
         float BGy = std::min(std::min(Ay,By), Cy);
 
 	float u,v,w,z;
+	Vec2i tex;
         for (int x = HGx; x<=BGx; x++ ){
                 for (int y=HGy; y>=BGy; y--){
-			//Au lieu de passer par les matrices je passe par la résoltion du sytème à 3 équations pour les coo barycentriques
+			//Au lieu de passer par les matrices je passe par la résolution du sytème à 3 équations pour les coo barycentriques
 			u = ((By - Cy)*(x-Cx) + (Cx-Bx)*(y-Cy))/((By-Cy)*(Ax-Cx) + (Cx-Bx)*(Ay-Cy));
 			v = ((Cy - Ay)*(x-Cx) + (Ax-Cx)*(y-Cy))/((By-Cy)*(Ax-Cx) + (Cx-Bx)*(Ay-Cy));
 			w = 1-u-v;
 			if ( u> 1 || u < 0 || v > 1 || v < 0 || w>1 || w < 0 )	continue;	
+
+			//Z-buffer
 			z = 0;	
 			z = Az*u + Bz*v + Cz*w;
+			tex.x = uv0.x*u+ uv1.x*y+uv2.x*w;
+			tex.y = uv0.y*u+ uv1.y*y+uv2.y*w;
 			if (zbuffer[(int)(x+y*width)]<z){
 				zbuffer[(int)(x+y*width)] = z;
-                        	image.set(x,y,TGAColor(intensity*255,intensity*255,intensity*255,255));
+                        	image.set(x,y,model->diffuse(tex));
 			}
                 }
         }
@@ -76,12 +81,13 @@ int main(int argc, char** argv) {
         } else {
         	model = new Model("obj/african_head.obj");
         }
-
         TGAImage image(width, height, TGAImage::RGB);
 	//Direction de la lumière
 	Vec3f light_dir(0,0,-1);
 	//Tableau du z-buffer
 	float *zbuffer = new float[width*height];
+	for (int i=0; i<width*height; i++)
+		zbuffer[i] = -1000;
 
         //triangle(10,50,70,180,200,70,image);
         
@@ -106,7 +112,7 @@ int main(int argc, char** argv) {
 	**/
 
 	//Rendering with triangles
-	/**
+/**	
 	for (int i = 0; i<model->nfaces(); i++) {
 		std::vector<int> face = model->face(i);	
 		Vec2i x,y,z;
@@ -118,19 +124,22 @@ int main(int argc, char** argv) {
 		z = Vec2i((coo.x+1.)*width/2., (coo.y+1.)*height/2);
 		triangle(x.x, x.y, y.x, y.y, z.x, z.y, image);
 	}
-	**/
+**/	
 
 	//BFC
 	for (int i = 0; i<model->nfaces(); i++) {
 		std::vector<int> face = model->face(i);	
 		Vec3f x,y,z;
 		Vec3f w_x, w_y, w_z;
+
 		Vec3f coo = model->vert(face[0]); 
 		x = Vec3f((coo.x+1.)*width/2., (coo.y+1.)*height/2, coo.z);
 		w_x = coo;
+
 		coo = model->vert(face[1]); 
 		y = Vec3f((coo.x+1.)*width/2., (coo.y+1.)*height/2, coo.z);
 		w_y = coo;
+
 		coo = model->vert(face[2]); 
 		z = Vec3f((coo.x+1.)*width/2., (coo.y+1.)*height/2, coo.z);
 		w_z = coo;
@@ -141,11 +150,12 @@ int main(int argc, char** argv) {
 		if (ii>0){
 			Vec2i uv[3];
 			for (int j = 0; j<3; j++) uv[j] = model->uv(i,j);
+			std::cout << face[0] << " " << uv[0] << std::endl;
 			triangle(x.x, x.y, x.z, y.x, y.y, x.z, z.x, z.y, x.z, uv[0], uv[1], uv[2], image, ii, zbuffer);
 		}
 	}
         // image.set(52, 41, red);
-        image.flip_vertically(); // i want to have the origin at the left bottom corner of the image
+        image.flip_vertically();
         image.write_tga_file("output.tga");
         return 0;
 }
