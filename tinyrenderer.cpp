@@ -46,7 +46,7 @@ void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
 /**
  * Fonction qui dessine un triangle plein
  */
-void triangle(float Ax, float Ay, float Az, float Bx, float By, float Bz, float Cx, float Cy, float Cz, TGAImage &image, float intensity, float* zbuffer){
+void triangle(float Ax, float Ay, float Az, float Bx, float By, float Bz, float Cx, float Cy, float Cz, Vec2i uv0, Vec2i uv1, Vec2i uv2, TGAImage &image, float intensity, float* zbuffer){
         float HGx = std::min(std::min(Ax,Bx), Cx);
         float HGy = std::max(std::max(Ay,By), Cy);
         float BGx = std::max(std::max(Ax,Bx), Cx);
@@ -138,8 +138,11 @@ int main(int argc, char** argv) {
 		Vec3f n = (w_z-w_x)^(w_y-w_x);
 		n.normalize();
 		float ii = n*light_dir;
-		if (ii>0)
-			triangle(x.x, x.y, x.z, y.x, y.y, x.z, z.x, z.y, x.z, image, ii, zbuffer);
+		if (ii>0){
+			Vec2i uv[3];
+			for (int j = 0; j<3; j++) uv[j] = model->uv(i,j);
+			triangle(x.x, x.y, x.z, y.x, y.y, x.z, z.x, z.y, x.z, uv[0], uv[1], uv[2], image, ii, zbuffer);
+		}
 	}
         // image.set(52, 41, red);
         image.flip_vertically(); // i want to have the origin at the left bottom corner of the image
