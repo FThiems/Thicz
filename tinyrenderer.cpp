@@ -69,7 +69,7 @@ void triangle(float Ax, float Ay, float Az, float Bx, float By, float Bz, float 
 			tex.y = uv0.y*u+ uv1.y*y+uv2.y*w;
 			if (zbuffer[(int)(x+y*width)]<z){
 				zbuffer[(int)(x+y*width)] = z;
-                        	image.set(x,y,model->diffuse(tex));
+                        	image.set(x,y,TGAColor(intensity*255,intensity*255,intensity*255,255));
 			}
                 }
         }
